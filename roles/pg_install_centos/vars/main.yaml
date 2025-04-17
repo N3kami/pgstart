@@ -1,9 +1,0 @@
-least_loaded_server: 10.22.31.197
-other_server: 10.22.31.198
-
-pg_data_dir: "/var/lib/pgsql/data"
-pg_port: 5432
-
-user: "student"
-password: "student"
-
