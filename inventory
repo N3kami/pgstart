@@ -1,0 +1,4 @@
+ansible_user=root
+
+pg_server    ansible_host=10.22.31.197
+other_server    ansible_host=10.22.31.198

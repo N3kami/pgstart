@@ -1,0 +1,9 @@
+least_loaded_server: __least_loaded_server__
+other_server: __other_server__
+
+pg_data_dir: "/etc/postgresql/{{ pgsql_version }}/main"
+pg_port: 5432
+
+user: "student"
+password: "student"
+

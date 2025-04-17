@@ -1,0 +1,5 @@
+---
+- hosts: "pg_server"
+  gather_facts: false
+  roles:
+    - role: pg_install_deb

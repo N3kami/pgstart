@@ -1,0 +1,65 @@
+---
+- name: install postgresql
+  apt:
+    update_cache: false
+    update_cache_retries: 3
+    name: postgresql
+    state: latest
+
+- name: install postgresql-contrib
+  apt:
+    name: postgresql-contrib
+    state: latest
+
+- name: get pgsql version
+  shell: "psql -V | awk '{print $3}' | cut -b -2"
+  register: pgsql_version
+
+- name: set pgsql_version fact
+  set_fact:
+    pgsql_version: "{{ pgsql_version.stdout }}"
+
+- name: make pgsql listen from all addresses
+  replace:
+    path: "{{ pg_data_dir }}/postgresql.conf"
+    regexp: "#listen_addresses = 'localhost'"
+    replace: "listen_addresses = '*'"
+
+- name: copy config
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ pg_data_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+  notify: restart postgres
+
+- name: run handlers
+  meta: flush_handlers
+
+- name: open pgsql port ufw
+  community.general.ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+  ignore_errors: true
+
+- name: open pgsql port iptables
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ pg_port }}"
+    jump: ACCEPT
+  ignore_errors: true
+
+- name: open pgsql port firewalld
+  ansible.posix.firewalld:
+    port: "{{ pg_port }}/tcp"
+    state: "enabled"
+    immediate: true
+    permanent: true
+  ignore_errors: true
+
+- name: create user and give all privileges
+  shell: |
+    psql -U postgres -c "CREATE USER {{ user }} WITH PASSWORD '{{ password }}';"
